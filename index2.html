@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Uploader</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>Upload Images</h2>
+    <input type="file" id="fileInput" class="form-control-file mb-3" multiple>
+    <button class="btn btn-primary mb-3" onclick="getDetails()">Get Image Details</button>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Image Names</h5>
+        <p class="card-text" id="imageNames"></p>
+        <button class="btn btn-secondary" onclick="copyNames()">Copy Names</button>
+      </div>
+    </div>
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title">Image Dimensions</h5>
+        <p class="card-text" id="imageDimensions"></p>
+        <button class="btn btn-secondary" onclick="copyDimensions()">Copy Dimensions</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getDetails() {
+      const fileInput = document.getElementById('fileInput');
+      const imageNamesContainer = document.getElementById('imageNames');
+      const imageDimensionsContainer = document.getElementById('imageDimensions');
+
+      if ('files' in fileInput && fileInput.files.length > 0) {
+        const names = [];
+        const dimensions = [];
+
+        Array.from(fileInput.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function() {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = function() {
+              const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, ''); // Remove file extension
+              names.push(nameWithoutExtension);
+              dimensions.push(`${img.width}x${img.height}`);
+              if (names.length === fileInput.files.length) {
+                displayDetails(names, dimensions);
+              }
+            };
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        imageNamesContainer.textContent = 'No images uploaded';
+        imageDimensionsContainer.textContent = 'No dimensions available';
+      }
+    }
+
+    function displayDetails(names, dimensions) {
+      const imageNamesContainer = document.getElementById('imageNames');
+      const imageDimensionsContainer = document.getElementById('imageDimensions');
+
+      const namesString = names.join(', ');
+      const dimensionsString = dimensions.join(', ');
+      imageNamesContainer.textContent = namesString;
+      imageDimensionsContainer.textContent = dimensionsString;
+    }
+
+    function copyNames() {
+      const imageNamesContainer = document.getElementById('imageNames');
+      const namesText = imageNamesContainer.textContent;
+
+      if (namesText) {
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = namesText;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        alert('Names copied to clipboard!');
+      }
+    }
+
+    function copyDimensions() {
+      const imageDimensionsContainer = document.getElementById('imageDimensions');
+      const dimensionsText = imageDimensionsContainer.textContent;
+
+      if (dimensionsText) {
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = dimensionsText;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        alert('Dimensions copied to clipboard!');
+      }
+    }
+  </script>
+</body>
+</html>

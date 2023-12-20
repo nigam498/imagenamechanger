@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Uploader and Renamer</title>
+  <style>
+    /* Styles for modern layout - created by Nigam Patel */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"],
+    textarea,
+    select,
+    button {
+      display: block;
+      width: calc(100% - 20px);
+      padding: 12px;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[type="file"] {
+      cursor: pointer;
+    }
+
+    button {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    a {
+      display: block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #3498db;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Uploader and Renamer</h1>
+    <input type="file" id="fileInput" multiple accept=".jpeg, .jpg, .png">
+    <textarea id="namesInput" placeholder="Enter names separated by commas"></textarea>
+    <select id="downloadFormat">
+      <option value="zip">ZIP</option>
+      <option value="jpeg">JPEG</option>
+      <option value="png">PNG</option>
+    </select>
+    <button id="uploadButton">Upload & Rename Images</button>
+    <a href="#" id="downloadLink">Download Renamed Images</a>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script>
+    document.getElementById('uploadButton').addEventListener('click', function() {
+      const fileInput = document.getElementById('fileInput');
+      const namesInput = document.getElementById('namesInput');
+      const downloadLink = document.getElementById('downloadLink');
+      const downloadFormat = document.getElementById('downloadFormat').value;
+
+      if (!fileInput.files.length || !namesInput.value.trim()) {
+        alert('Please select images and provide names.');
+        return;
+      }
+
+      const files = Array.from(fileInput.files);
+      const names = namesInput.value.split(',').map(name => name.trim());
+
+      if (files.length !== names.length) {
+        alert('Number of images and names should match.');
+        return;
+      }
+
+      const renamedFiles = [];
+      const zip = new JSZip();
+
+      files.forEach((file, index) => {
+        const newName = names[index];
+        const extension = file.name.split('.').pop().toLowerCase();
+        const renamedFile = new File([file], `${newName}.${extension}`, { type: file.type });
+        renamedFiles.push(renamedFile);
+
+        if (downloadFormat === 'zip') {
+          zip.file(`${newName}.${extension}`, renamedFile);
+        }
+      });
+
+      if (downloadFormat === 'zip') {
+        zip.generateAsync({ type: 'blob' }).then(function(content) {
+          const url = window.URL.createObjectURL(content);
+          downloadLink.href = url;
+          downloadLink.download = 'renamed_images.zip';
+          downloadLink.style.display = 'block';
+        });
+      } else {
+        if (renamedFiles.length === 1) {
+          const url = window.URL.createObjectURL(renamedFiles[0]);
+          downloadLink.href = url;
+          downloadLink.download = `${names[0]}.${downloadFormat}`;
+          downloadLink.style.display = 'block';
+        } else {
+          alert('Select ZIP to download multiple files.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
